@@ -1,6 +1,6 @@
 # BearBlog CLI
 
-A simple command-line interface for managing your BearBlog posts. Create, list, and delete posts without needing the web dashboard.
+A simple (unofficial) command-line interface for managing your BearBlog posts. Create, list, and delete posts without needing the web dashboard.
 
 > **Note:** This tool works with the free BearBlog plan. Publish, update, and unpublish operations are not available on the free plan.
 
