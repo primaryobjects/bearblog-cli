@@ -29,6 +29,26 @@ A simple (unofficial) command-line interface for managing your BearBlog posts. C
 
 ## Usage
 
+```
+usage: bearcli.py [-h] {list,new,delete} ...
+
+BearBlog CLI (Free Plan)
+
+Examples:
+  bearcli list
+  bearcli new "My Post Title" --file post.md
+  bearcli delete abc123xyz
+
+positional arguments:
+  {list,new,delete}
+    list             List all posts in your Bear Blog dashboard.
+    new              Create a new post from a markdown file.
+    delete           Delete a post by ID.
+
+options:
+  -h, --help         show this help message and exit
+```
+
 ### List posts
 
 ```bash
