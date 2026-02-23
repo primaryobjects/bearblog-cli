@@ -493,8 +493,6 @@ def main():
             "  bearcli new \"My Post Title\" --file post.md\n"
             "  bearcli load abc123xyz\n"
             "  bearcli delete abc123xyz\n"
-            "\n"
-            "Note: publish, unpublish, and update are disabled on the free plan."
         ),
         formatter_class=argparse.RawTextHelpFormatter
     )

@@ -40,8 +40,6 @@ Examples:
   bearcli load abc123xyz
   bearcli delete abc123xyz
 
-Note: publish, unpublish, and update are disabled on the free plan.
-
 positional arguments:
   {list,new,load,delete}
     list                List all posts in your Bear Blog dashboard.
