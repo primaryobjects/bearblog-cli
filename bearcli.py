@@ -59,9 +59,35 @@ def get_session():
             cookie = f.read().strip()
             session.cookies.set("session", cookie, domain="bearblog.dev")
 
+    session.headers.update({
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/122.0.0.0 Safari/537.36"
+        ),
+        "Accept": (
+            "text/html,application/xhtml+xml,application/xml;"
+            "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
+            "application/signed-exchange;v=b3;q=0.7"
+        ),
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "max-age=0",
+        "Sec-Ch-Ua": '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+        "Sec-Ch-Ua-Mobile": "?0",
+        "Sec-Ch-Ua-Platform": '"Windows"',
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
+    })
+
     # Test if session is already valid
     r = session.get(f"{blog_url}/dashboard/posts")
+
     if "Log in" not in r.text and "Sign In" not in r.text:
+        if "challenge-error-text" in r.text:
+            print("Block by CloudFlare.")
         return session
 
     # Correct login URL
@@ -196,45 +222,45 @@ def cmd_new(args):
 # -----------------------------
 # UPDATE POST
 # -----------------------------
-# def cmd_update(args):
-#     session = get_session()
-#     email, password, blog_url = load_config()
+def cmd_update(args):
+    session = get_session()
+    email, password, blog_url = load_config()
 
-#     # Read new body content
-#     with open(args.file, "r", encoding="utf-8") as f:
-#         body_content = f.read().lstrip("\ufeff")
+    # Read new body content
+    with open(args.file, "r", encoding="utf-8") as f:
+        body_content = f.read().lstrip("\ufeff")
 
-#     edit_url = f"{blog_url}/dashboard/posts/{args.id}/"
+    edit_url = f"{blog_url}/dashboard/posts/{args.id}/"
 
-#     # Load edit page
-#     r = session.get(edit_url)
-#     soup = BeautifulSoup(r.text, "html.parser")
+    # Load edit page
+    r = session.get(edit_url)
+    soup = BeautifulSoup(r.text, "html.parser")
 
-#     # Extract CSRF
-#     csrf_input = soup.find("input", {"name": "csrfmiddlewaretoken"})
-#     csrf = csrf_input["value"]
+    # Extract CSRF
+    csrf_input = soup.find("input", {"name": "csrfmiddlewaretoken"})
+    csrf = csrf_input["value"]
 
-#     # Extract header_content EXACTLY like browser innerText
-#     header_div = soup.find("div", {"id": "header_content"})
-#     header_content = extract_header_content(header_div)
+    # Extract header_content EXACTLY like browser innerText
+    header_div = soup.find("div", {"id": "header_content"})
+    header_content = extract_header_content(header_div)
 
-#     # Build payload
-#     payload = {
-#         "csrfmiddlewaretoken": csrf,
-#         "header_content": header_content,
-#         "body_content": body_content,
-#     }
+    # Build payload
+    payload = {
+        "csrfmiddlewaretoken": csrf,
+        "header_content": header_content,
+        "body_content": body_content,
+    }
 
-#     headers = {"Referer": edit_url}
+    headers = {"Referer": edit_url}
 
-#     # POST update
-#     r = session.post(edit_url, data=payload, headers=headers)
+    # POST update
+    r = session.post(edit_url, data=payload, headers=headers)
 
-#     if r.status_code != 200:
-#         print(r.text)
-#         raise RuntimeError(f"Update failed (status {r.status_code})")
+    if r.status_code != 200:
+        print(r.text)
+        raise RuntimeError(f"Update failed (status {r.status_code})")
 
-#     print(json.dumps({"status": "updated", "id": args.id}, indent=2))
+    print(json.dumps({"status": "updated", "id": args.id}, indent=2))
 
 
 # -----------------------------
@@ -278,38 +304,38 @@ def cmd_delete(args):
 # -----------------------------
 # PUBLISH POST
 # -----------------------------
-# def cmd_publish(args):
-#     session = get_session()
-#     email, password, blog_url = load_config()
+def cmd_publish(args):
+    session = get_session()
+    email, password, blog_url = load_config()
 
-#     post_id = args.id
-#     edit_url = f"{blog_url}/dashboard/posts/{post_id}/"
+    post_id = args.id
+    edit_url = f"{blog_url}/dashboard/posts/{post_id}/"
 
-#     # CSRF from cookie
-#     if "csrftoken" not in session.cookies:
-#         raise RuntimeError("No CSRF token in session cookies")
+    # CSRF from cookie
+    if "csrftoken" not in session.cookies:
+        raise RuntimeError("No CSRF token in session cookies")
 
-#     csrf = session.cookies["csrftoken"]
+    csrf = session.cookies["csrftoken"]
 
-#     payload = {
-#         "csrfmiddlewaretoken": csrf,
-#         "published": "true"
-#     }
+    payload = {
+        "csrfmiddlewaretoken": csrf,
+        "published": "true"
+    }
 
-#     headers = {
-#         "Referer": edit_url
-#     }
+    headers = {
+        "Referer": edit_url
+    }
 
-#     r = session.post(edit_url, data=payload, headers=headers)
+    r = session.post(edit_url, data=payload, headers=headers)
 
-#     if r.status_code != 200:
-#         print(r.text)
-#         raise RuntimeError(f"Publish failed (status {r.status_code})")
+    if r.status_code != 200:
+        print(r.text)
+        raise RuntimeError(f"Publish failed (status {r.status_code})")
 
-#     print(json.dumps({
-#         "status": "published",
-#         "id": post_id
-#     }, indent=2))
+    print(json.dumps({
+        "status": "published",
+        "id": post_id
+    }, indent=2))
 
 
 # def extract_clean_header(div):
@@ -532,14 +558,14 @@ def main():
     p_delete.set_defaults(func=cmd_delete)
 
     # Disabled commands (kept for future use)
-    # p_update = sub.add_parser("update", help="Update a post (disabled).")
-    # p_update.add_argument("id")
-    # p_update.add_argument("--file", required=True)
-    # p_update.set_defaults(func=cmd_update)
+    p_update = sub.add_parser("update", help="Update a post by ID.")
+    p_update.add_argument("id")
+    p_update.add_argument("--file", required=True)
+    p_update.set_defaults(func=cmd_update)
 
-    # p_publish = sub.add_parser("publish", help="Publish a post (disabled).")
-    # p_publish.add_argument("id")
-    # p_publish.set_defaults(func=cmd_publish)
+    p_publish = sub.add_parser("publish", help="Publish a post by ID.")
+    p_publish.add_argument("id")
+    p_publish.set_defaults(func=cmd_publish)
 
     # p_unpublish = sub.add_parser("unpublish", help="Unpublish a post (disabled).")
     # p_unpublish.add_argument("id")
