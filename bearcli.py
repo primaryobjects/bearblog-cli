@@ -87,7 +87,8 @@ def get_session():
 
     if "Log in" not in r.text and "Sign In" not in r.text:
         if "challenge-error-text" in r.text:
-            print("Block by CloudFlare.")
+            print(f"Exception: Blocked by CloudFlare\nResponse: {r.text[:100]}\n\n")
+            raise Exception("Blocked by CloudFlare")
         return session
 
     # Correct login URL
