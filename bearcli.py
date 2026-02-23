@@ -448,6 +448,38 @@ def extract_header_content(header_div):
 #         "id": post_id
 #     }, indent=2))
 
+def cmd_load(args):
+    session = get_session()
+    email, password, blog_url = load_config()
+
+    edit_url = f"{blog_url}/dashboard/posts/{args.id}/"
+    r = session.get(edit_url)
+    soup = BeautifulSoup(r.text, "html.parser")
+
+    # Extract header
+    header_div = soup.find("div", {"id": "header_content"})
+    if not header_div:
+        raise RuntimeError("Could not find header_content DIV")
+
+    # Convert <br> to newlines
+    for br in header_div.find_all("br"):
+        br.replace_with("\n")
+
+    # Extract text
+    header_text = header_div.get_text("\n").strip()
+
+    # Extract body
+    body_textarea = soup.find("textarea", {"name": "body_content"})
+    if not body_textarea:
+        raise RuntimeError("Could not find body_content textarea")
+
+    body_text = body_textarea.text.lstrip("\ufeff")
+
+    print("\n=== HEADER ===\n")
+    print(header_text)
+    print("\n=== BODY ===\n")
+    print(body_text)
+
 
 # -----------------------------
 # MAIN
@@ -459,8 +491,10 @@ def main():
             "Examples:\n"
             "  bearcli list\n"
             "  bearcli new \"My Post Title\" --file post.md\n"
+            "  bearcli load abc123xyz\n"
             "  bearcli delete abc123xyz\n"
             "\n"
+            "Note: publish, unpublish, and update are disabled on the free plan."
         ),
         formatter_class=argparse.RawTextHelpFormatter
     )
@@ -482,6 +516,14 @@ def main():
     p_new.add_argument("title", help="Title of the new post.")
     p_new.add_argument("--file", required=True, help="Path to the markdown file.")
     p_new.set_defaults(func=cmd_new)
+
+    # load
+    p_load = sub.add_parser(
+        "load",
+        help="Load a post by ID and print its header + body."
+    )
+    p_load.add_argument("id", help="Post ID to load.")
+    p_load.set_defaults(func=cmd_load)
 
     # delete
     p_delete = sub.add_parser(
